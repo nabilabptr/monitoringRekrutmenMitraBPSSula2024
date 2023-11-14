@@ -47,6 +47,9 @@ with st.container():
         "posisi_daftar == @posisi_daftar & wilayah == @wilayah"
     )
 
+
+@st.cache (allow_output_mutation=True)
+
     data_filtered = data_filtered.loc[:, data_filtered.columns != "date_update"]
 
     st.dataframe(data_filtered, use_container_width=True)
