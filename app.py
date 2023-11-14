@@ -49,12 +49,18 @@ def main():
                 options=data["wilayah"].unique(),
                 default=data["wilayah"].unique()
             )
+            
+        search_name = st.text_input("Search nama:")
 
         data_filtered = data.query(
             "posisi_daftar == @posisi_daftar & wilayah == @wilayah"
         )
 
         data_filtered = data_filtered.loc[:, data_filtered.columns != "date_update"]
+
+        if search_name is not None:
+            data_filtered = data_filtered[data_filtered['nama'].str.contains(search_name, case=False)]
+
 
         st.dataframe(data_filtered, use_container_width=True)
 
