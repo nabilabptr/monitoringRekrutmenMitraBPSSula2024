@@ -4,9 +4,14 @@ import pandas as pd
 
 st.set_page_config(layout="wide")
 
-conn = st.experimental_connection("gsheets", type=GSheetsConnection)
-data = conn.read(worksheet="db", usecols=list(range(4)))
-data = data.dropna(how="all")
+@st.cache_data(ttl=3600)
+def load_data():
+    conn = st.experimental_connection("gsheets", type=GSheetsConnection)
+    data = conn.read(worksheet="db", usecols=list(range(4)))
+    data = data.dropna(how="all")
+    return data
+
+data = load_data()
 
 def main():
 
@@ -52,9 +57,6 @@ def main():
         data_filtered = data_filtered.loc[:, data_filtered.columns != "date_update"]
 
         st.dataframe(data_filtered, use_container_width=True)
-
-        # Rerun aplikasi dan membersihkan cache saat halaman diperbarui
-        # st.experimental_rerun()
 
 if __name__ == "__main__":
     main()
