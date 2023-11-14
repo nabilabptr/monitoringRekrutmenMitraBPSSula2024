@@ -54,7 +54,7 @@ def main():
         st.dataframe(data_filtered, use_container_width=True)
 
         # Rerun aplikasi dan membersihkan cache saat halaman diperbarui
-        st.experimental_rerun()
+        # st.experimental_rerun()
 
 if __name__ == "__main__":
     main()
