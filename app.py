@@ -2,12 +2,16 @@ import streamlit as st
 from streamlit_gsheets import GSheetsConnection
 import pandas as pd
 
-st.set_page_config(layout="wide")
+st.set_page_config(
+    page_title="Monitoring Mitra 8203",
+    page_icon=":bookmark_tabs:",
+    layout="wide"
+)
 
 @st.cache_data(ttl=3600)
 def load_data():
-    conn = st.experimental_connection("gsheets", type=GSheetsConnection)
-    data = conn.read(worksheet="db", usecols=list(range(4)))
+    conn = st.connection("gsheets", type=GSheetsConnection)
+    data = conn.read(worksheet="db", usecols=list(range(5)))
     data = data.dropna(how="all")
     return data
 
@@ -15,45 +19,47 @@ data = load_data()
 
 def main():
 
-    st.title("Monitoring Rekrutmen Mitra Statistik BPS Kabupaten Kepulauan Sula 2024")
+    st.title("Monitoring Mitra Statistik BPS Kabupaten Kepulauan Sula 2024")
 
-    st.header('Rekapan')
+    date_update_df = pd.DataFrame(
+        {
+            "sula": [data[data['wilayah']=='Kepulauan Sula']['date_update'].unique()[0]],
+            "taliabu": [data[data['wilayah']=='Pulau Taliabu']['date_update'].unique()[0]]
+        }
+    )
 
-    pendaftar_sula = data[data['wilayah']=='Kepulauan Sula']['posisi_daftar'].value_counts()
-    pendaftar_taliabu = data[data['wilayah']=='Pulau Taliabu']['posisi_daftar'].value_counts()
+    progress_sula = round(len(data[(data['wilayah']=='Kepulauan Sula') & (data['status_pi']=='Disetujui')])/len(data[(data['wilayah']=='Kepulauan Sula')]),2)
+    progress_taliabu = round(len(data[(data['wilayah']=='Pulau Taliabu') & (data['status_pi']=='Disetujui')])/len(data[(data['wilayah']=='Pulau Taliabu')]),2)
 
-    tab1, tab2 = st.tabs(["Kepulauan Sula", "Pulau Taliabu"])
-    with tab1:
-        st.subheader(f"Tanggal Update: {data[data['wilayah']=='Kepulauan Sula']['date_update'].unique()[0]} WIT")
-        st.subheader(f"Total pendaftar: {pendaftar_sula.sum()}")
-        st.dataframe(pendaftar_sula)
-    with tab2:
-        st.subheader(f"Tanggal Update: {data[data['wilayah']=='Pulau Taliabu']['date_update'].unique()[0]} WIT")
-        st.subheader(f"Total pendaftar: {pendaftar_taliabu.sum()}")
-        st.dataframe(pendaftar_taliabu)
+    st.subheader("Progress persetujuan Pakta Integritas:")
+
+    col1,col2 = st.columns(2)
+    col1.metric("Kepulauan Sula", f'{progress_sula}%')
+    col2.metric("Pulau Taliabu", f'{progress_taliabu}%')
 
     st.markdown("---")
 
-    st.subheader('Daftar nama calon mitra yang berhasil mendaftar:')
+    st.subheader("Daftar Mitra BPS Kabupaten Kepulauan Sula:")
+
     with st.container():
         col1, col2 = st.columns(2)
         with col1:
-            posisi_daftar = st.multiselect(
-                "Pilih posisi daftar:",
-                options=data["posisi_daftar"].unique(),
-                default=data["posisi_daftar"].unique()
+            status_pi = st.multiselect(
+                "Pilih Status Pakta Integritas:",
+                options=data["status_pi"].dropna().unique(),
+                default=data["status_pi"].dropna().unique()
             )
         with col2:
             wilayah = st.multiselect(
                 "Pilih wilayah pendaftaran:",
-                options=data["wilayah"].unique(),
-                default=data["wilayah"].unique()
+                options=data["wilayah"].dropna().unique(),
+                default=data["wilayah"].dropna().unique()
             )
             
         search_name = st.text_input("Search nama:")
 
         data_filtered = data.query(
-            "posisi_daftar == @posisi_daftar & wilayah == @wilayah"
+            "status_pi == @status_pi & wilayah == @wilayah"
         )
 
         data_filtered = data_filtered.loc[:, data_filtered.columns != "date_update"]
@@ -62,7 +68,17 @@ def main():
             data_filtered = data_filtered[data_filtered['nama'].str.contains(search_name, case=False)]
 
 
-        st.dataframe(data_filtered, use_container_width=True)
+        st.data_editor(
+            data_filtered,
+            column_config= {
+                "nama": "Nama",
+                "jenis_mitra" : "Jenis Mitra",
+                "status_pi" : "Status Pakta Integritas",
+                "wilayah" : "Wilayah Domisili"
+            },
+            disabled= ["nama", "jenis_mitra", "status_pi", "wilayah"],
+            use_container_width=True,
+            hide_index=True)
 
 if __name__ == "__main__":
     main()
