@@ -10,23 +10,36 @@ st.set_page_config(
 
 @st.cache_data(ttl=300)
 def load_data():
-    conn = st.experimental_connection("gsheets", type=GSheetsConnection)
+    conn = st.connection("gsheets", type=GSheetsConnection)
     data = conn.read(worksheet="db", usecols=list(range(5)))
     data = data.dropna(how="all")
     return data
+
+st.markdown("""
+<style>
+p {
+    margin: 0px;
+    padding: 0px;
+    font-size: 20px
+}
+.big-font {
+    font-size:42px !important;
+}
+.small-font {
+    font-size:16px;
+}
+</style>
+""", unsafe_allow_html=True)
 
 data = load_data()
 
 def main():
 
     st.title("Monitoring Mitra Statistik BPS Kabupaten Kepulauan Sula 2024")
+    st.markdown("---")
 
-    date_update_df = pd.DataFrame(
-        {
-            "sula": [data[data['wilayah']=='Kepulauan Sula']['date_update'].unique()[0]],
-            "taliabu": [data[data['wilayah']=='Pulau Taliabu']['date_update'].unique()[0]]
-        }
-    )
+    date_sula = data[data['wilayah']=='Kepulauan Sula']['date_update'].unique()[0]
+    date_taliabu = data[data['wilayah']=='Pulau Taliabu']['date_update'].unique()[0]
 
     progress_sula = round(len(data[(data['wilayah']=='Kepulauan Sula') & (data['status_pi']=='Disetujui')])/len(data[(data['wilayah']=='Kepulauan Sula')]),2)
     progress_taliabu = round(len(data[(data['wilayah']=='Pulau Taliabu') & (data['status_pi']=='Disetujui')])/len(data[(data['wilayah']=='Pulau Taliabu')]),2)
@@ -34,8 +47,14 @@ def main():
     st.subheader("Progress persetujuan Pakta Integritas:")
 
     col1,col2 = st.columns(2)
-    col1.metric("Kepulauan Sula", f'{progress_sula}%')
-    col2.metric("Pulau Taliabu", f'{progress_taliabu}%')
+    with col1:
+        st.markdown(f'''<p>Kepulauan Sula</p>  
+                    <p class="big-font">{progress_sula}%</p>  
+                    <p class="small-font">Updated at {date_sula}</p>''', unsafe_allow_html=True)
+    with col2:
+        st.markdown(f'''<p>Pulau Taliabu</p>  
+                    <p class="big-font">{progress_taliabu}%</p>  
+                    <p class="small-font">Updated at {date_taliabu}</p>''', unsafe_allow_html=True)
 
     st.markdown("---")
 
@@ -78,8 +97,7 @@ def main():
             },
             disabled= ["nama", "jenis_mitra", "status_pi", "wilayah"],
             use_container_width=True,
-            hide_index=True
-        )
+            hide_index=True)
 
 if __name__ == "__main__":
     main()
