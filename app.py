@@ -8,7 +8,7 @@ st.set_page_config(
     layout="wide"
 )
 
-@st.cache_data(ttl=3600)
+@st.cache_data(ttl=300)
 def load_data():
     conn = st.connection("gsheets", type=GSheetsConnection)
     data = conn.read(worksheet="db", usecols=list(range(5)))
