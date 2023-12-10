@@ -41,8 +41,8 @@ def main():
     date_sula = data[data['wilayah']=='Kepulauan Sula']['date_update'].unique()[0]
     date_taliabu = data[data['wilayah']=='Pulau Taliabu']['date_update'].unique()[0]
 
-    progress_sula = round(len(data[(data['wilayah']=='Kepulauan Sula') & (data['status_pi']=='Disetujui')])/len(data[(data['wilayah']=='Kepulauan Sula')]),2)
-    progress_taliabu = round(len(data[(data['wilayah']=='Pulau Taliabu') & (data['status_pi']=='Disetujui')])/len(data[(data['wilayah']=='Pulau Taliabu')]),2)
+    progress_sula = round(len(data[(data['wilayah']=='Kepulauan Sula') & (data['status_pi']=='Disetujui')])/len(data[(data['wilayah']=='Kepulauan Sula')])*100,2)
+    progress_taliabu = round(len(data[(data['wilayah']=='Pulau Taliabu') & (data['status_pi']=='Disetujui')])/len(data[(data['wilayah']=='Pulau Taliabu')])*100,2)
 
     st.subheader("Progress persetujuan Pakta Integritas:")
 
