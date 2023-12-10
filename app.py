@@ -10,7 +10,7 @@ st.set_page_config(
 
 @st.cache_data(ttl=300)
 def load_data():
-    conn = st.connection("gsheets", type=GSheetsConnection)
+    conn = st.experimental_connection("gsheets", type=GSheetsConnection)
     data = conn.read(worksheet="db", usecols=list(range(5)))
     data = data.dropna(how="all")
     return data
